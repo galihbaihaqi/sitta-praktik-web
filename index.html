@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login — SITTA Universitas Terbuka</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- CSS Eksternal -->
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+  <!-- ===== Form Login ===== -->
+  <main class="login-card">
+    <h1>Selamat Datang</h1>
+
+    <form id="formLogin" novalidate>
+
+      <!-- Input Email -->
+      <div class="field">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/>
+        </svg>
+        <input type="email" id="email" placeholder="Email"
+               autocomplete="username" aria-label="Email" />
+      </div>
+
+      <!-- Input Password -->
+      <div class="field">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12.65 10A6 6 0 1 0 12 14.9L14 17h2v2h2v2h4v-4l-9.35-7ZM7 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3Z"/>
+        </svg>
+        <input type="password" id="password" placeholder="Password"
+               autocomplete="current-password" aria-label="Password" />
+      </div>
+
+      <!-- Lupa Password -->
+      <button type="button" class="link-btn forgot" id="btnLupa">
+        Lupa Password ?
+      </button>
+
+      <!-- Tombol Login -->
+      <button type="submit" class="btn-login">Masuk</button>
+    </form>
+
+    <!-- Link Daftar -->
+    <div class="register-row">
+      <button type="button" class="link-btn" id="btnDaftar">
+        Belum punya akun? Daftar
+      </button>
+    </div>
+  </main>
+
+
+  <!-- ===== Modal: Pesan (error / sukses) ===== -->
+  <div class="overlay" id="modalPesan">
+    <div class="modal" id="boxPesan"
+         role="alertdialog" aria-modal="true" aria-labelledby="pesanJudul">
+      <h2 id="pesanJudul"></h2>
+      <p  id="pesanIsi"></p>
+      <button type="button" class="btn-login" data-close="modalPesan">OK</button>
+    </div>
+  </div>
+
+  <!-- ===== Modal: Lupa Password ===== -->
+  <div class="overlay" id="modalLupa">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="lupaJudul">
+      <button type="button" class="close" data-close="modalLupa" aria-label="Tutup">&times;</button>
+      <h2 id="lupaJudul">Lupa Password</h2>
+      <p>Masukkan email yang terdaftar. Kami akan mengirim tautan untuk mengatur ulang password.</p>
+      <form id="formLupa" novalidate>
+        <div class="field">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4-8 5-8-5V6l8 5 8-5v2Z"/>
+          </svg>
+          <input type="email" id="lupaEmail" placeholder="Email" aria-label="Email" />
+        </div>
+        <button type="submit" class="btn-login">Kirim Tautan</button>
+        <div class="msg" id="lupaMsg"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ===== Modal: Daftar ===== -->
+  <div class="overlay" id="modalDaftar">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="daftarJudul">
+      <button type="button" class="close" data-close="modalDaftar" aria-label="Tutup">&times;</button>
+      <h2 id="daftarJudul">Daftar Akun</h2>
+      <p>Buat akun baru untuk mulai menggunakan website.</p>
+      <form id="formDaftar" novalidate>
+        <div class="field">
+          <input type="email"    id="daftarEmail" placeholder="Email"                          aria-label="Email" />
+        </div>
+        <div class="field">
+          <input type="password" id="daftarPass"  placeholder="Password (minimal 6 karakter)"  aria-label="Password" />
+        </div>
+        <div class="field">
+          <input type="password" id="daftarPass2" placeholder="Ulangi password"                aria-label="Ulangi password" />
+        </div>
+        <button type="submit" class="btn-login">Daftar</button>
+        <div class="msg" id="daftarMsg"></div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- ===== JavaScript Eksternal ===== -->
+  <!-- data.js harus dimuat DULUAN agar dataPengguna tersedia untuk script.js -->
+  <script src="js/data.js"></script>
+  <script src="js/script.js"></script>
+
+</body>
+</html>

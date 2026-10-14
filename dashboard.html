@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dashboard — SITTA Universitas Terbuka</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<!-- class dashboard-page mengaktifkan CSS khusus dashboard -->
+<body class="dashboard-page">
+
+  <!-- =====================================================
+       TOP BAR (kuning)
+       ===================================================== -->
+  <header>
+    <div class="topbar">
+
+      <!-- Kiri: pengumuman -->
+      <div class="topbar-left">
+        <span class="topbar-icon" aria-hidden="true">📢</span>
+        <span>Sistem Informasi dan Transaksi Bahan Ajar UT</span>
+      </div>
+
+      <!-- Tengah: pencarian (Enter -> halaman Informasi Bahan Ajar) -->
+      <div class="topbar-search" role="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 20l-4.35-4.35A8 8 0 1 0 15.65 15.65L20 20l1 1Zm-13-4a6 6 0 1 1 0-12 6 6 0 0 1 0 12Z"/>
+        </svg>
+        <input type="text" id="topCari" placeholder="Cari bahan ajar lalu tekan Enter" aria-label="Cari bahan ajar" />
+      </div>
+
+      <!-- Kanan: info pengguna + logout -->
+      <div class="topbar-right">
+        <div class="topbar-user">
+          <div class="topbar-avatar" id="topAvatar">A</div>
+          <span id="topNama">Pengguna</span>
+        </div>
+        <button type="button" class="topbar-logout" onclick="logout()">Keluar</button>
+      </div>
+
+    </div>
+
+    <!-- =====================================================
+         NAVBAR (putih)
+         ===================================================== -->
+    <nav class="navbar" aria-label="Menu utama">
+
+      <!-- Logo kiri -->
+      <a href="dashboard.html" class="navbar-brand">
+        <img
+        src="img/Logo UT.jpg"
+        alt="Logo Universitas Terbuka"
+        class="brand-logo"></img>
+        <div class="brand-text">
+          <span class="brand-name">Universitas Terbuka</span>
+          <span class="brand-sub">Making Higher Education Open to All</span>
+        </div>
+      </a>
+
+      <!-- Hamburger (mobile) -->
+      <button type="button" class="toggle" id="toggle" aria-label="Buka menu" aria-expanded="false">&#9776;</button>
+
+      <!-- Menu -->
+      <ul class="menu" id="menu">
+        <li><a href="stok.html">Informasi Bahan Ajar</a></li>
+        <li><a href="tracking.html">Tracking Pengiriman</a></li>
+
+        <!-- Dropdown Laporan -->
+        <li class="dropdown" id="dropLaporan">
+          <button type="button" class="drop-btn"
+                  aria-haspopup="true" aria-expanded="false"
+                  onclick="toggleDropdown('dropLaporan')">
+            Laporan &#9662;
+          </button>
+          <ul class="dropdown-menu">
+            <li><a href="#monitoring" data-panel="monitoring">Monitoring Progress DO Bahan Ajar</a></li>
+            <li><a href="#rekap" data-panel="rekap">Rekap Bahan Ajar</a></li>
+          </ul>
+        </li>
+
+        <li><a href="#histori" data-panel="histori">Histori Transaksi Bahan Ajar</a></li>
+      </ul>
+
+      <!-- Tombol kanan menuju laman MyUT -->
+      <a href="https://myut.ut.ac.id/auth/login"
+          class="btn-myut"target="_blank" rel="noopener noreferrer">MyUT</a>
+
+    </nav>
+  </header>
+
+  <!-- =====================================================
+       KONTEN UTAMA
+       ===================================================== -->
+  <main>
+
+    <h1>Dashboard Aplikasi SITTA</h1>
+    <p class="greeting" id="greeting">Selamat datang</p>
+    <p class="clock" id="clock"></p>
+
+    <!-- Pintasan menu -->
+    <section class="shortcuts" aria-label="Pintasan menu">
+
+      <a class="shortcut" href="stok.html">
+        <strong>📚 Informasi Bahan Ajar</strong>
+        <span>Lihat daftar dan stok bahan ajar yang tersedia di gudang UT.</span>
+      </a>
+
+      <a class="shortcut" href="tracking.html">
+        <strong>📦 Tracking Pengiriman</strong>
+        <span>Lacak paket dengan nomor Delivery Order.</span>
+      </a>
+
+      <a class="shortcut" href="#monitoring" data-panel="monitoring">
+        <strong>📊 Laporan</strong>
+        <span>Monitoring progress DO dan rekap bahan ajar.</span>
+      </a>
+
+      <a class="shortcut" href="#histori" data-panel="histori">
+        <strong>🗂️ Histori Transaksi</strong>
+        <span>Riwayat seluruh transaksi bahan ajar yang pernah dilakukan.</span>
+      </a>
+
+    </section>
+
+    <!-- ===== Katalog sampul bahan ajar ===== -->
+    <section class="katalog" aria-labelledby="judulKatalog">
+      <h2 id="judulKatalog">Bahan Ajar Tersedia</h2>
+      <p class="katalog-intro">Klik sampul untuk melihat detail stoknya.</p>
+      <div class="katalog-grid" id="katalog"></div>
+    </section>
+
+    <!-- ===== Cari Delivery Order ===== -->
+    <section class="do-section" aria-labelledby="judulDO">
+      <h2 id="judulDO">Cari Delivery Order</h2>
+      <p class="do-intro">Masukkan nomor Delivery Order untuk melihat status pengiriman bahan ajar.</p>
+
+      <div class="do-form" role="search">
+        <input type="text" id="inputDO" inputmode="numeric" autocomplete="off"
+               placeholder="Nomor Delivery Order" aria-label="Nomor Delivery Order" />
+        <button type="button" id="btnCari">Cari</button>
+      </div>
+      <p class="do-hint">Contoh nomor untuk uji coba: <code>2025001</code> (diterima), <code>2025002</code> (dikirim), <code>2025003</code> (diproses).</p>
+
+      <div id="hasilDO" aria-live="polite"></div>
+    </section>
+
+    <!-- ===== Panel: Monitoring Progress DO ===== -->
+    <section class="panel" id="panel-monitoring" aria-labelledby="judulMon" hidden>
+      <div class="panel-head">
+        <h2 id="judulMon">Monitoring Progress DO Bahan Ajar</h2>
+        <button type="button" class="panel-close" data-close-panel>Tutup</button>
+      </div>
+
+      <div class="panel-tools">
+        <input type="search" id="monCari" placeholder="Cari nomor DO atau nama mahasiswa" aria-label="Cari DO" />
+        <select id="monStatus" aria-label="Filter status pengiriman">
+          <option value="">Semua status</option>
+          <option value="proses">Sedang diproses</option>
+          <option value="perjalanan">Dalam perjalanan</option>
+          <option value="selesai">Selesai (diterima)</option>
+        </select>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th scope="col">No. DO</th>
+              <th scope="col">Mahasiswa</th>
+              <th scope="col">Ekspedisi</th>
+              <th scope="col">Status</th>
+              <th scope="col">Progres</th>
+              <th scope="col">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="monBody"></tbody>
+        </table>
+      </div>
+      <p class="panel-note" id="monInfo" aria-live="polite"></p>
+    </section>
+
+    <!-- ===== Panel: Rekap Bahan Ajar ===== -->
+    <section class="panel" id="panel-rekap" aria-labelledby="judulRekap" hidden>
+      <div class="panel-head">
+        <h2 id="judulRekap">Rekap Bahan Ajar</h2>
+        <button type="button" class="panel-close" data-close-panel>Tutup</button>
+      </div>
+
+      <div class="rekap-stats" id="rekapStats"></div>
+
+      <div class="rekap-grid">
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <caption>Per ekspedisi</caption>
+            <thead>
+              <tr><th scope="col">Ekspedisi</th><th scope="col">Jumlah DO</th><th scope="col">Modul</th><th scope="col">Nilai</th></tr>
+            </thead>
+            <tbody id="rekapEkspedisi"></tbody>
+          </table>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <caption>Per jenis paket</caption>
+            <thead>
+              <tr><th scope="col">Jenis paket</th><th scope="col">Jumlah DO</th><th scope="col">Nilai</th></tr>
+            </thead>
+            <tbody id="rekapPaket"></tbody>
+          </table>
+        </div>
+
+        <div class="tbl-wrap">
+          <table class="tbl">
+            <caption>Per status pengiriman</caption>
+            <thead>
+              <tr><th scope="col">Status</th><th scope="col">Jumlah DO</th></tr>
+            </thead>
+            <tbody id="rekapStatus"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Panel: Histori Transaksi ===== -->
+    <section class="panel" id="panel-histori" aria-labelledby="judulHist" hidden>
+      <div class="panel-head">
+        <h2 id="judulHist">Histori Transaksi Bahan Ajar</h2>
+        <button type="button" class="panel-close" data-close-panel>Tutup</button>
+      </div>
+
+      <div class="panel-tools">
+        <input type="search" id="histCari" placeholder="Cari ID transaksi, no. DO, atau nama" aria-label="Cari transaksi" />
+        <select id="histStatus" aria-label="Filter status pembayaran">
+          <option value="">Semua status</option>
+          <option value="Lunas">Lunas</option>
+          <option value="Menunggu Pembayaran">Menunggu Pembayaran</option>
+          <option value="Dibatalkan">Dibatalkan</option>
+        </select>
+        <button type="button" class="btn-unduh" id="btnUnduhHistori">Unduh CSV</button>
+      </div>
+
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead>
+            <tr>
+              <th scope="col">ID</th>
+              <th scope="col">Tanggal</th>
+              <th scope="col">No. DO</th>
+              <th scope="col">Mahasiswa</th>
+              <th scope="col">Keterangan</th>
+              <th scope="col" class="angka">Total</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+      <p class="panel-note" id="histInfo" aria-live="polite"></p>
+    </section>
+
+  </main>
+
+  <!-- data.js harus dimuat SEBELUM script.js -->
+  <script src="js/data.js"></script>
+  <script src="js/script.js"></script>
+</body>
+</html>
