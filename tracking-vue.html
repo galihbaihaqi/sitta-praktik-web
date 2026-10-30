@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tracking Pengiriman (Vue.js) — SITTA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/tugas2.css">
+</head>
+<body class="tracking-page">
+
+<div id="app" v-cloak>
+
+<header>
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-icon" aria-hidden="true">📢</span>
+      <span>Sistem Informasi Tiras dan Transaksi Bahan Ajar UT</span>
+    </div>
+    <div class="topbar-search" role="search">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21 20l-4.35-4.35A8 8 0 1 0 15.65 15.65L20 20l1 1Zm-13-4a6 6 0 1 1 0-12 6 6 0 0 1 0 12Z"/>
+      </svg>
+      <input type="text" id="topCari" v-model="topCari" @keyup.enter="cariDariTopbar" placeholder="Cari bahan ajar lalu tekan Enter" aria-label="Cari bahan ajar" />
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-user">
+        <div class="topbar-avatar">A</div>
+        <span>Pengguna</span>
+      </div>
+      <button type="button" class="topbar-logout" @click="logout">Keluar</button>
+    </div>
+  </div>
+
+  <nav class="navbar" aria-label="Menu utama">
+    <a href="dashboard.html" class="navbar-brand">
+      <img src="img/Logo UT.jpg" alt="Logo Universitas Terbuka" class="brand-logo">
+      <div class="brand-text">
+        <span class="brand-name">Universitas Terbuka</span>
+        <span class="brand-sub">Making Higher Education Open to All</span>
+      </div>
+    </a>
+
+    <button type="button" class="toggle" :aria-expanded="String(menuOpen)" aria-label="Buka menu" @click="menuOpen = !menuOpen">&#9776;</button>
+
+    <ul class="menu" :class="{ open: menuOpen, show: menuOpen }" id="menu">
+      <li><a href="stok-vue.html">Informasi Bahan Ajar</a></li>
+      <li><a href="tracking-vue.html" class="active" aria-current="page">Tracking Pengiriman</a></li>
+      <li class="dropdown" :class="{ open: dropdownOpen }">
+        <button type="button" class="drop-btn" aria-haspopup="true" :aria-expanded="String(dropdownOpen)" @click="dropdownOpen = !dropdownOpen">
+          Laporan &#9662;
+        </button>
+        <ul class="dropdown-menu">
+          <li><a href="dashboard.html#monitoring">Monitoring Progress DO Bahan Ajar</a></li>
+          <li><a href="dashboard.html#rekap">Rekap Bahan Ajar</a></li>
+        </ul>
+      </li>
+      <li><a href="dashboard.html#histori">Histori Transaksi Bahan Ajar</a></li>
+    </ul>
+
+    <a href="index.html" class="btn-myut">MyUT</a>
+  </nav>
+</header>
+
+<main>
+  <a class="back" href="dashboard.html">&larr; Kembali ke Dashboard</a>
+  <h1>Tracking Pengiriman</h1>
+
+  <!-- ===== Cari DO ===== -->
+  <form class="search" @submit.prevent="cari" novalidate>
+    <label for="noDO">No. DO/Billing</label>
+    <input type="text" id="noDO" v-model="kodeCari" placeholder="Contoh: DO2025-001" autocomplete="off">
+    <button type="submit" class="btn-cari" :disabled="!kodeCari.trim()">Cari</button>
+  </form>
+  <p class="hint">Contoh nomor untuk uji coba: <code>DO2025-001</code>. DO baru yang Anda buat di bawah juga bisa dicari.</p>
+
+  <div v-if="pesan" class="t2-box t2-ok" role="status">{{ pesan }}</div>
+
+  <!-- ===== Hasil pencarian ===== -->
+  <div aria-live="polite">
+    <section class="t2-card" v-if="hasil">
+      <h2>{{ hasil.noDO }}
+        <span class="t2-badge" :class="kelasStatus(hasil.status)">{{ hasil.status }}</span>
+      </h2>
+      <dl class="t2-dl">
+        <dt>Nama</dt><dd>{{ hasil.nama }}</dd>
+        <dt>NIM</dt><dd>{{ hasil.nim }}</dd>
+        <dt>Ekspedisi</dt><dd>{{ hasil.ekspedisi }}</dd>
+        <dt>Tanggal kirim</dt><dd>{{ hasil.tanggalKirim }}</dd>
+        <dt>Paket</dt><dd>{{ namaPaketHasil }}</dd>
+        <dt>Total harga</dt><dd>{{ formatRupiah(hasil.total) }}</dd>
+      </dl>
+      <h3>Perjalanan paket</h3>
+      <ul class="t2-timeline">
+        <li v-for="(p, i) in hasil.perjalanan" :key="i">
+          <time>{{ p.waktu }}</time>{{ p.keterangan }}
+        </li>
+      </ul>
+    </section>
+    <p class="t2-box t2-warn" v-else-if="sudahCari">Nomor DO <strong>{{ kodeHasil }}</strong> tidak ditemukan. Periksa kembali nomornya.</p>
+  </div>
+
+  <div class="t2-grid" style="margin-top:20px">
+    <!-- ===== Form DO baru ===== -->
+    <section class="t2-card panel-tambah" aria-labelledby="judulDO">
+      <h2 id="judulDO">Tambah Delivery Order baru</h2>
+      <form @submit.prevent="simpan" novalidate>
+        <div class="form-grid">
+          <div class="field">
+            <label for="dNo">Nomor DO (otomatis)</label>
+            <input type="text" id="dNo" :value="nomorDOBerikutnya" readonly>
+          </div>
+
+          <div class="field">
+            <label for="dNim">NIM</label>
+            <input type="text" id="dNim" v-model="form.nim" :class="{ 't2-invalid': errors.nim }" inputmode="numeric" placeholder="Contoh: 123456789" autocomplete="off">
+            <div class="t2-err" v-if="errors.nim">{{ errors.nim }}</div>
+          </div>
+
+          <div class="field lebar">
+            <label for="dNama">Nama</label>
+            <input type="text" id="dNama" v-model="form.nama" :class="{ 't2-invalid': errors.nama }" placeholder="Nama mahasiswa" autocomplete="off">
+            <div class="t2-err" v-if="errors.nama">{{ errors.nama }}</div>
+          </div>
+
+          <div class="field">
+            <label for="dEkspedisi">Ekspedisi</label>
+            <select id="dEkspedisi" v-model="form.ekspedisi" :class="{ 't2-invalid': errors.ekspedisi }">
+              <option value="" disabled>Pilih ekspedisi</option>
+              <option v-for="p in pengirimanList" :key="p.kode" :value="'JNE ' + p.nama">JNE {{ p.nama }}</option>
+            </select>
+            <div class="t2-err" v-if="errors.ekspedisi">{{ errors.ekspedisi }}</div>
+          </div>
+
+          <div class="field">
+            <label for="dTanggal">Tanggal kirim</label>
+            <input type="date" id="dTanggal" v-model="form.tanggal" :class="{ 't2-invalid': errors.tanggal }">
+            <div class="t2-hint"><button type="button" class="t2-link" @click="form.tanggal = hariIni()">Pakai tanggal hari ini</button></div>
+            <div class="t2-err" v-if="errors.tanggal">{{ errors.tanggal }}</div>
+          </div>
+
+          <div class="field lebar">
+            <label for="dPaket">Paket bahan ajar</label>
+            <select id="dPaket" v-model="form.paket" :class="{ 't2-invalid': errors.paket }">
+              <option value="" disabled>Pilih paket</option>
+              <option v-for="p in paketList" :key="p.kode" :value="p.kode">{{ p.kode }} — {{ p.nama }}</option>
+            </select>
+            <div class="t2-err" v-if="errors.paket">{{ errors.paket }}</div>
+
+            <!-- detail isi paket muncul setelah paket dipilih -->
+            <div class="t2-paket-detail" v-if="paketTerpilih">
+              Isi paket <strong>{{ paketTerpilih.nama }}</strong>:
+              <ul>
+                <li v-for="isi in isiPaketTerpilih" :key="isi.kode">{{ isi.kode }} — {{ isi.judul }}</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field lebar">
+            <label for="dTotal">Total harga</label>
+            <input type="text" id="dTotal" :value="formatRupiah(form.total)" readonly>
+          </div>
+        </div>
+
+        <div class="form-aksi">
+          <button type="submit" class="btn btn-utama">Simpan DO</button>
+          <button type="button" class="btn btn-sekunder" @click="resetForm">Kosongkan</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===== Daftar DO ===== -->
+    <section class="t2-card" aria-labelledby="judulDaftar">
+      <h2 id="judulDaftar">Daftar Delivery Order ({{ daftarDO.length }})</h2>
+      <div class="tbl-wrap">
+        <table class="tbl-stok">
+          <thead>
+            <tr><th>No. DO</th><th>Nama</th><th>Status</th><th class="angka">Total</th><th>Aksi</th></tr>
+          </thead>
+          <tbody>
+            <tr v-for="d in daftarDO" :key="d.noDO">
+              <td>{{ d.noDO }}</td>
+              <td>{{ d.nama }}</td>
+              <td><span class="t2-badge" :class="kelasStatus(d.status)">{{ d.status }}</span></td>
+              <td class="angka">{{ formatRupiah(d.total) }}</td>
+              <td><button type="button" class="btn-kecil" @click="lihat(d.noDO)">Lacak</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</main>
+
+</div><!-- /#app -->
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js"></script>
+<script src="js/dataBahanAjar.js"></script>
+<script src="js/tracking-app.js"></script>
+</body>
+</html>
